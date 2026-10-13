@@ -32,6 +32,7 @@
         .email-gate { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
         .email-gate label { font-size: 11px; color: var(--dim); }
         .email-input { background: #0b0b10; border: 1px solid #3a3a52; border-radius: 4px; padding: 6px 10px; color: white; font-size: 12px; }
+        .email-input:focus { outline: none; border-color: var(--purple); }
         
         .action-row { display: flex; justify-content: space-between; align-items: center; }
         .label-v { font-size: 12px; color: var(--dim); }
@@ -51,9 +52,11 @@
         .tier-card { background: #121217; border: 1px solid #2d2d3d; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 8px; }
         .tier-card.active { border-color: var(--purple); background: rgba(157, 78, 221, 0.05); }
         .tier-info { display: flex; align-items: center; gap: 10px; }
+        .tier-checkbox { accent-color: var(--purple); width: 16px; height: 16px; }
         .checkout-box { background: #111114; border-radius: 8px; padding: 12px; margin-top: 15px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
         .checkout-row { display: flex; justify-content: space-between; }
-        .gate-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 6px; padding: 12px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+        .gate-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 6px; padding: 12px; font-weight: bold; cursor: pointer; margin-top: 12px; font-size: 14px; }
+        .gate-btn:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -173,109 +176,3 @@
         <div class="track-header">
             <div class="track-title">
                 <h4>4. Get Active</h4>
-                <p>A Rising Superstar</p>
-            </div>
-            <div id="status-4"></div>
-        </div>
-        const soundNode = document.getElementById('plugin-audio-node');
-let dynamicNodeId = null;
-let baselineTimer = null;
-const metricsDb = {
-1: { yes: 5, no: 2, locked: false },
-2: { yes: 4, no: 2, locked: false },
-3: { yes: 6, no: 1, locked: false },
-4: { yes: 5, no: 3, locked: false }
-};
-window.onload = function() {
-Object.keys(metricsDb).forEach(id => {
-if(localStorage.getItem(voted_track_${id})) {
-metricsDb[id].locked = true;
-document.getElementById(group-${id}).innerHTML = 'Limit 1 logged vote per account.';
-document.getElementById(gate-${id}).style.display = 'none';
-}
-refreshDisplayMetrics(id);
-});
-}
-function runTrack(id, path) {
-if (dynamicNodeId === id) {
-if (soundNode.paused) {
-soundNode.play();
-document.querySelector(#t${id} .play-trigger).innerText = 'Pause';
-} else {
-soundNode.pause();
-document.querySelector(#t${id} .play-trigger).innerText = 'Play';
-}
-} else {
-if (dynamicNodeId) {
-document.querySelector(#t${dynamicNodeId} .play-trigger).innerText = 'Play';
-document.getElementById(f${dynamicNodeId}).style.width = '0%';
-document.getElementById(s${dynamicNodeId}).innerText = '0:00';
-}
-dynamicNodeId = id;
-soundNode.src = path;
-soundNode.play();
-document.querySelector(#t${id} .play-trigger).innerText = 'Pause';
-clearInterval(baselineTimer);
-baselineTimer = setInterval(() => {
-if (soundNode.currentTime >= 27) {
-soundNode.pause();
-soundNode.currentTime = 0;
-document.querySelector(#t${id} .play-trigger).innerText = 'Play';
-clearInterval(baselineTimer);
-}
-const pct = (soundNode.currentTime / 27) * 100;
-document.getElementById(f${id}).style.width = ${pct}%;
-const sec = Math.floor(soundNode.currentTime % 60).toString().padStart(2, '0');
-document.getElementById(s${id}).innerText = 0:${sec};
-}, 100);
-}
-}
-function logVote(id, isYes) {
-if (metricsDb[id].locked) return;
-const emailVal = document.getElementById(email-${id}).value.trim();
-if (!emailVal || !emailVal.includes('@')) {
-alert('Please type a valid email address to authenticate your profile.');
-return;
-}
-if (isYes) metricsDb[id].yes++; else metricsDb[id].no++;
-localStorage.setItem(voted_track_${id}, emailVal);
-metricsDb[id].locked = true;
-document.getElementById(gate-${id}).style.display = 'none';
-document.getElementById(group-${id}).innerHTML = 'Limit 1 logged vote per account.';
-refreshDisplayMetrics(id);
-}
-function refreshDisplayMetrics(id) {
-const total = metricsDb[id].yes + metricsDb[id].no;
-document.getElementById(count-${id}).innerText = Progress: ${total} / 10 Votes;
-const yPct = Math.round((metricsDb[id].yes / total) * 100);
-const nPct = 100 - yPct;
-document.getElementById(my${id}).style.width = ${yPct}%;
-document.getElementById(mn${id}).style.width = ${nPct}%;
-document.getElementById(pct-text-${id}).innerHTML = <span>Worth it: ${yPct}%</span><span>Drop: ${nPct}%</span>;
-if (total >= 10 || (metricsDb[id].locked && total >= 7)) {
-const badge = document.getElementById(status-${id});
-if(document.getElementById(group-${id})) document.getElementById(group-${id}).style.display = 'none';
-if(document.getElementById(gate-${id})) document.getElementById(gate-${id}).style.display = 'none';
-badge.innerHTML = yPct >= 65 ? <span class="final-badge badge-album">Album Track</span> : <span class="final-badge badge-single">Single Track</span>;
-}
-}
-function toggleTier(boxId, price) {
-if(event.target.tagName !== 'INPUT') {
-document.getElementById(boxId).checked = !document.getElementById(boxId).checked;
-}
-document.getElementById(boxId).closest('.tier-card').classList.toggle('active', document.getElementById(boxId).checked);
-calcCart();
-}
-function calcCart() {
-const s = document.getElementById('tier-single').checked;
-const b = document.getElementById('tier-bundle').checked;
-let sub = 0, items = 0;
-if(s) { sub += 1; items++; }
-if(b) { sub += 4; items++; }
-let disc = items >= 2 ? sub * 0.25 : 0;
-document.getElementById('disc-row').style.display = disc > 0 ? 'flex' : 'none';
-document.getElementById('sub-lbl').innerText = $${sub.toFixed(2)};
-document.getElementById('disc-lbl').innerText = -$${disc.toFixed(2)};
-document.getElementById('total-lbl').innerText = $${(sub - disc).toFixed(2)};
-}
-        <div class="audio-row">
