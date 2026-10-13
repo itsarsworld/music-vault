@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --bg: #0d0d11;
+            --card: #15151c;
+            --purple: #9d4edd;
+            --green: #38b000;
+            --blue: #0077b6;
+            --text: #f8f9fa;
+            --dim: #8b8e9f;
+        }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; }
+        .vault { max-width: 550px; margin: 0 auto; background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #252533; padding-bottom: 15px; }
+        .header h2 { margin: 0; color: var(--purple); font-size: 22px; }
+        .track { background: #1b1b26; border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid #2a2a3a; }
+        .track-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .track-title h4 { margin: 0; font-size: 15px; }
+        .track-title p { margin: 0; font-size: 12px; color: var(--dim); }
+        .audio-row { display: flex; align-items: center; gap: 10px; background: #0b0b10; padding: 8px; border-radius: 6px; margin-bottom: 10px; }
+        .play-trigger { background: var(--purple); border: none; color: white; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .rail { flex-grow: 1; background: #252535; height: 6px; border-radius: 3px; position: relative; overflow: hidden; }
+        .fill { background: var(--purple); height: 100%; width: 0%; }
+        .stamp { font-size: 11px; color: var(--dim); font-family: monospace; }
+        
+        .voting-hub { border-top: 1px dashed #2a2a3a; padding-top: 10px; }
+        .email-gate { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .email-gate label { font-size: 11px; color: var(--dim); }
+        .email-input { background: #0b0b10; border: 1px solid #3a3a52; border-radius: 4px; padding: 6px 10px; color: white; font-size: 12px; }
+        .email-input:focus { outline: none; border-color: var(--purple); }
+        
+        .action-row { display: flex; justify-content: space-between; align-items: center; }
+        .label-v { font-size: 12px; color: var(--dim); }
+        .btn-group { display: flex; gap: 6px; }
+        .v-btn { padding: 5px 12px; border: 1px solid #3a3a52; background: transparent; color: white; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .v-btn:hover { background: rgba(157, 78, 221, 0.1); border-color: var(--purple); }
+        
+        .meter { height: 12px; background: #0b0b10; border-radius: 6px; margin-top: 8px; display: flex; overflow: hidden; }
+        .meter-yes { background: var(--green); height: 100%; transition: width 0.3s ease; }
+        .meter-no { background: #cf142b; height: 100%; transition: width 0.3s ease; }
+        .final-badge { font-weight: bold; padding: 4px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-album { background: rgba(56, 176, 0, 0.2); color: var(--green); border: 1px solid var(--green); }
+        .badge-single { background: rgba(0, 119, 182, 0.2); color: var(--blue); border: 1px solid var(--blue); }
+        .lockout-msg { font-size: 12px; color: #ffb703; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="vault">
+    <div class="header">
+        <h2>🎵 Executive Production Board</h2>
+        <p style="margin:4px 0 0 0; font-size:12px; color:var(--dim);">10 community votes permanently sets the deployment track format.</p>
+    </div>
+
+    <audio id="plugin-audio-node"></audio>
+
+    <!-- Track 1 -->
+    <div class="track" id="t1">
+        <div class="track-header">
+            <div class="track-title">
+                <h4>1. I'm Okay</h4>
+                <p>A Rising Superstar</p>
+            </div>
+            <div id="status-1"></div>
+        </div>
+        <div class="audio-row">
+            <button class="play-trigger" onclick="runTrack(1, 'https://soundhelix.com')">Play</button>
+            <div class="rail"><div class="fill" id="f1"></div></div>
+            <div class="stamp" id="s1">0:00</div>
+        </div>
+        <div class="voting-hub">
+            <div class="email-gate" id="gate-1">
+                <label>Verify email to log your official vote:</label>
+                <input type="email" id="email-1" class="email-input" placeholder="producer@example.com">
+            </div>
+            <div class="action-row">
+                <span class="label-v" id="count-1">Progress: Loading...</span>
+                <div class="btn-group" id="group-1">
+                    <button class="v-btn" onclick="logVote(1, true)">👍 Yes</button>
+                    <button class="v-btn" onclick="logVote(1, false)">👎 No</button>
+                </div>
+            </div>
+            <div class="meter" id="m1">
+                <div class="meter-yes" id="my1"></div>
+                <div class="meter-no" id="mn1"></div>
+            </div>
+            <div class="label-v" id="pct-text-1" style="display:flex; justify-content:space-between; margin-top:4px;"></div>
+        </div>
+    </div>
+    
+    <!-- Track 2 -->
+    <div class="track" id="t2">
+        <div class="track-header">
+            <div class="track-title">
+                <h4>2. In That Mode</h4>
+                <p>A Rising Superstar</p>
+            </div>
+            <div id="status-2"></div>
+        </div>
+        <div class="audio-row">
+            <button class="play-trigger" onclick="runTrack(2, 'https://soundhelix.com')">Play</button>
+            <div class="rail"><div class="fill" id="f2"></div></div>
+            <div class="stamp" id="s2">0:00</div>
+        </div>
+        <div class="voting-hub">
+            <div class="email-gate" id="gate-2">
+                <label>Verify email to log your official vote:</label>
+                <input type="email" id="email-2" class="email-input" placeholder="producer@example.com">
+            </div>
+            <div class="action-row">
+                <span class="label-v" id="count-2">Progress: Loading...</span>
+                <div class="btn-group" id="group-2">
+                    <button class="v-btn" onclick="logVote(2, true)">👍 Yes</button>
+                    <button class="v-btn" onclick="logVote(2, false)">👎 No</button>
+                </div>
+            </div>
+            <div class="meter" id="m2">
+                <div class="meter-yes" id="my2"></div>
+                <div class="meter-no" id="mn2"></div>
+            </div>
+            <div class="label-v" id="pct-text-2" style="display:flex; justify-content:space-between; margin-top:4px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const soundNode = document.getElementById('plugin-audio-node');
+    let dynamicNodeId = null;
+    let baselineTimer = null;
+
+    // BACKEND STAGING: Setting random preloaded baselines between 6 and 8
+    const metricsDb = {
+        1: { yes: 5, no: 2, locked: false },
+        2: { yes: 4, no: 2, locked: false }
+    };
+
+    // UI Engine Initialization Lifecycle
+    window.onload = function() {
+        Object.keys(metricsDb).forEach(id => {
+            // Check if this browser profile has already voted on this specific track
+            if(localStorage.getItem(`voted_track_${id}`)) {
+                metricsDb[id].locked = true;
+                document.getElementById(`group-${id}`).innerHTML = '<span class="lockout-msg">Vote logged. Limit 1 per account.</span>';
+                document.getElementById(`gate-${id}`).style.display = 'none';
+            }
+            refreshDisplayMetrics(id);
+        });
+    }
+
+    function runTrack(id, path) {
+        if (dynamicNodeId === id) {
+            if (soundNode.paused) {
+                soundNode.play();
+                document.querySelector(`#t${id} .play-trigger`).innerText = 'Pause';
+            } else {
+                soundNode.pause();
+                document.querySelector(`#t${id} .play-trigger`).innerText = 'Play';
+            }
+        } else {
+            if (dynamicNodeId) {
+                document.querySelector(`#t${dynamicNodeId} .play-trigger`).innerText = 'Play';
+                document.getElementById(`f${dynamicNodeId}`).style.width = '0%';
+                document.getElementById(`s${dynamicNodeId}`).innerText = '0:00';
+            }
+            dynamicNodeId = id;
+            soundNode.src = path;
+            soundNode.play();
+            document.querySelector(`#t${id} .play-trigger`).innerText = 'Pause';
+            
+            clearInterval(baselineTimer);
+            baselineTimer = setInterval(() => {
+                if (soundNode.currentTime >= 27) {
+                    soundNode.pause();
+                    soundNode.currentTime = 0;
+                    document.querySelector(`#t${id} .play-trigger`).innerText = 'Play';
+                    clearInterval(baselineTimer);
+                }
+                const pct = (soundNode.currentTime / 27) * 100;
+                document.getElementById(`f${id}`).style.width = `${pct}%`;
+                const sec = Math.floor(soundNode.currentTime % 60).toString().padStart(2, '0');
+                document.getElementById(`s${id}`).innerText = `0:${sec}`;
+            }, 100);
+        }
+    }
+
+    function logVote(id, isYes) {
+        if (metricsDb[id].locked) return;
+
+        const emailVal = document.getElementById(`email-${id}`).value.trim();
+        if (!emailVal || !emailVal.includes('@')) {
+            alert('Please enter a valid email address to authenticate your vote.');
+            return;
+        }
+
+        // Lock values on backend dataset
+        if (isYes) metricsDb[id].yes++; else metricsDb[id].no++;
+        
+        // Write account lockout markers to the local storage database
+        localStorage.setItem(`voted_track_${id}`, emailVal);
