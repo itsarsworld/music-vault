@@ -146,48 +146,32 @@
                 document.getElementById(`group-${id}`).innerHTML = '<span class="lockout-msg">Vote logged. Limit 1 per account.</span>';
                 document.getElementById(`gate-${id}`).style.display = 'none';
             }
-            refreshDisplayMetrics(id);
-        });
-    }
+               function refreshDisplayMetrics(id) {
+        const total = metricsDb[id].yes + metricsDb[id].no;
+        document.getElementById(`count-${id}`).innerText = `Progress: ${total} / 10 Votes`;
+        
+        const yPct = Math.round((metricsDb[id].yes / total) * 100);
+        const nPct = 100 - yPct;
 
-    function runTrack(id, path) {
-        if (dynamicNodeId === id) {
-            if (soundNode.paused) {
-                soundNode.play();
-                document.querySelector(`#t${id} .play-trigger`).innerText = 'Pause';
-            } else {
-                soundNode.pause();
-                document.querySelector(`#t${id} .play-trigger`).innerText = 'Play';
-            }
-        } else {
-            if (dynamicNodeId) {
-                document.querySelector(`#t${dynamicNodeId} .play-trigger`).innerText = 'Play';
-                document.getElementById(`f${dynamicNodeId}`).style.width = '0%';
-                document.getElementById(`s${dynamicNodeId}`).innerText = '0:00';
-            }
-            dynamicNodeId = id;
-            soundNode.src = path;
-            soundNode.play();
-            document.querySelector(`#t${id} .play-trigger`).innerText = 'Pause';
+        // FIXED: Now accurately targets the unique bars for each specific song ID
+        document.getElementById(`my${id}`).style.width = `${yPct}%`;
+        document.getElementById(`mn${id}`).style.width = `${nPct}%`;
+        document.getElementById(`pct-text-${id}`).innerHTML = `<span>Worth it: ${yPct}%</span><span>Drop: ${nPct}%</span>`;
+
+        // Check if milestone has been reached to award track categorization status
+        if (total >= 10 || (metricsDb[id].locked && total >= 6)) {
+            const badge = document.getElementById(`status-${id}`);
+            if(document.getElementById(`group-${id}`)) document.getElementById(`group-${id}`).style.display = 'none';
+            if(document.getElementById(`gate-${id}`)) document.getElementById(`gate-${id}`).style.display = 'none';
             
-            clearInterval(baselineTimer);
-            baselineTimer = setInterval(() => {
-                if (soundNode.currentTime >= 27) {
-                    soundNode.pause();
-                    soundNode.currentTime = 0;
-                    document.querySelector(`#t${id} .play-trigger`).innerText = 'Play';
-                    clearInterval(baselineTimer);
-                }
-                const pct = (soundNode.currentTime / 27) * 100;
-                document.getElementById(`f${id}`).style.width = `${pct}%`;
-                const sec = Math.floor(soundNode.currentTime % 60).toString().padStart(2, '0');
-                document.getElementById(`s${id}`).innerText = `0:${sec}`;
-            }, 100);
+            if (yPct >= 65) {
+                badge.innerHTML = `<span class="final-badge badge-album">Album Track</span>`;
+            } else {
+                badge.innerHTML = `<span class="final-badge badge-single">Single Track</span>`;
+            }
         }
     }
 
-    function logVote(id, isYes) {
-        if (metricsDb[id].locked) return;
 
         const emailVal = document.getElementById(`email-${id}`).value.trim();
         if (!emailVal || !emailVal.includes('@')) {
